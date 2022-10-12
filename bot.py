@@ -50,18 +50,30 @@ def message(payload):
 @app.route('/addproject' , methods=['POST'])
 def addproject():
     text = request.form.get("text")
-    print(text)
-    response = requests.post(os.environ['XANOPROJECT']  # need to be dynmaic values from user.
-    , data = {"Project_Name": text}
-    
+    while text != "" :  #waiting for user input 
+        client.chat_postMessage(channel='#general' , text=f"Okay I am creating new Project: {text}")
+        response = requests.post(os.environ['XANOPROJECT']  # need to be dynmaic values from user.
+        , data = {"Project_Name": text}
+     
 )
-    client.chat_postMessage(channel='#general' , text=f"Okay I am creati new Project: {text}")
-    return Response(), 200 
+        if  response.status_code == 200:
+            print("status code received. breaking loop..." )
+            break
+
+    if text == "":
+
+        client.chat_postMessage(channel='#general' , text="Please enter a Project Name ater /addproject.")
+
+
+    
+    return Response(), 200
+    
 
 
 #add task   
 @app.route('/addtask' , methods=['POST'])
 def addtask():
+
     text = request.form.get("text")
     print(text)
     response = requests.post(os.environ['XANOTASK']  # need to be dynmaic values from user.
