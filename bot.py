@@ -1,10 +1,15 @@
+from msilib import datasizemask
+from turtle import delay
 import slack
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from flask import Flask , request , Response 
+from flask import Flask , request , Response ,jsonify
 from slackeventsapi import SlackEventAdapter
 import requests
+import json
+import time
+from threading import Thread
 
 
 
@@ -26,16 +31,8 @@ def message(payload):
     channel_id = event.get('channel')
     user_id = event.get('user')
     text = event.get('text')
-    
-    if BOT_ID != user_id:
-        if user_id in message_counts:
-            message_counts[user_id] += 1
-        else:
-            message_counts[user_id] = 1
-
+     
     #client.chat_postMessage(channel='#general' , text=text)
-
-
 #message count
 # @app.route('/messagecount' , methods=['POST'])
 # def message_count():
@@ -72,15 +69,58 @@ def addproject():
 
 #add task   
 @app.route('/addtask' , methods=['POST'])
-def addtask():
-
+def commandaddtask(task):
     text = request.form.get("text")
-    print(text)
-    response = requests.post(os.environ['XANOTASK']  # need to be dynmaic values from user.
-    , data = {"Task": text}
+    client.chat_postMessage(channel='#general' , text="Is this project personal?") 
     
-)
-    client.chat_postMessage(channel='#general' , text=f"Okay I am adding new task: {text}")
+
+
+# def addtask(text):
+
+
+    
+def projectlist():
+    
+    projects = requests.get(os.environ['XANOPROJECT'])
+    parseddata = json.loads(projects.content)
+    client.chat_postMessage(channel='#general' , text=f"you have {len(parseddata)} projects...")
+    time.sleep(1)
+    client.chat_postMessage(channel='#general' , text="...")
+    for i in range(len(parseddata)):
+        
+        Projectlist= []
+        Projectlist = parseddata[i]["Project_Name"],parseddata[i]["id"]
+        
+
+        client.chat_postMessage(channel='#general' , text=f"{Projectlist}") 
+        Projectlist= []
+    time.sleep(1)
+    client.chat_postMessage(channel='#general' , text="You can add tasks to projects with specifing id of the project with /addtask command.")
+# if "yes" in text.lower():
+#             response = requests.post(os.environ['XANOTASK'], data = {"Task": text,"slackbotprojectinfo_id": id } ) 
+@app.route('/listproject' , methods=['POST','GET'])
+def listproject():
+
+    thr = Thread(target=projectlist)
+    thr.start()
+
+    return      client.chat_postMessage(channel='#general' , text="lets look at projects..") 
+    
+        # client.chat_postMessage(channel='#general' , text="Please specify the id of the project") 
+        
+ 
+        
+        # id = request.form.get("text")
+        # if id != "" :
+
+        #     response = requests.post(os.environ['XANOTASK'], data = {"Task": var_text,"slackbotprojectinfo_id": id } )              
+
+
+
+
+
+
+
     return Response(), 200 
 
 # #UpdateTask  
